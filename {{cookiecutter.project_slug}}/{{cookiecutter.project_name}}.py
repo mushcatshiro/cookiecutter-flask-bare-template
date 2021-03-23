@@ -42,7 +42,7 @@ celeryapp = make_celery(app)
 
 @celeryapp.task
 def long_task(x_pred):
-    {{cookiecutter.long_task_code}}  # noqa
+    {{cookiecutter.async_task_function}}  # noqa
     return
 {% endif %}  # noqa
 
