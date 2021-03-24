@@ -7,11 +7,7 @@
     "async_task_function": "insert_your_async_task_function_here",
     "requires_database_setup": ["true", "false"],
     "database_name": "your_database_name",
-    "endpoints": [
-        {
-            "endpoint_name": "insert_endpoint_function_here",
-            "endpoint_test_code": "insert_endpoint_test_code_here"
-        },
-    ]
-
+    "requires_crud": ["true", "false"],
+    "endpoint_name": "insert_endpoint_name_here",
+    "endpoint_function": "insert_endpoint_function_here"
 }

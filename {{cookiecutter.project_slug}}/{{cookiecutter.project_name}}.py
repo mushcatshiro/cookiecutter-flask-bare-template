@@ -2,22 +2,36 @@ from flask import (
     Flask,
     jsonify
 )
-{% if cookiecutter.requires_async_task == 'true' %}  # noqa
+from flask.logging import default_handler
+import logging
+import logging.handlers
+import os
+{% if cookiecutter.requires_async_task == 'true' %}
 from celery import Celery
-{% endif %}  # noqa
-{% if cookiecutter.requires_database_setup == 'true' %}  # noqa
+{% endif %}
+{% if cookiecutter.requires_database_setup == 'true' %}
 from flask_sqlalchemy import SQLAlchemy
-{% endif %}  # noqa
+{% endif %}
 
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'R4nD0mS3cre7'
-{% if cookiecutter.requires_database_setup == 'true' %}  # noqa
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////{{cookiecutter.database_name}}.sqlite'  # noqa
-db = SQLAlchemy(app)
-{% endif %}  # noqa
 
-{% if cookiecutter.requires_async_task == 'true' %}  # noqa
+app.logger.removeHandler(default_handler)
+logfile_handler = logging.handlers.RotatingFileHandler(
+    filename=os.path.join(os.getcwd(), "{{cookiecutter.project_name}}.log"),
+    maxBytes=10000,
+    backupCount=10
+)
+app.logger.addHandler(logfile_handler)
+
+{% if cookiecutter.requires_database_setup == 'true' %}
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////{{cookiecutter.database_name}}.sqlite'
+db = SQLAlchemy(app)
+{% endif %}
+
+
+{% if cookiecutter.requires_async_task == 'true' %}
 def make_celery(app):
     celery = Celery(
         __name__,
@@ -42,19 +56,19 @@ celeryapp = make_celery(app)
 
 @celeryapp.task
 def long_task(x_pred):
-    {{cookiecutter.async_task_function}}  # noqa
+    {{cookiecutter.async_task_function}}
     return
-{% endif %}  # noqa
+{% endif %}
 
 
 @app.route('/{{cookiecutter.endpoint_name}}')
-def {{cookiecutter.endpoint_name}}():  # noqa
-    {{cookiecutter.endpoint_function}}  # noqa
+def {{cookiecutter.endpoint_name}}():
+    {{cookiecutter.endpoint_function}}
     return jsonify(resp)
 
 
-{% if cookiecutter.requires_async_task == 'true' %}  # noqa
-@app.route('/{{cookiecutter.endpoint_name}}/status/<string:task_id>')  # noqa
+{% if cookiecutter.requires_async_task == 'true' %}
+@app.route('/{{cookiecutter.endpoint_name}}/status/<string:task_id>')
 def status(task_id):
     task = long_task.AsyncResult(task_id)
     if task.state == 'PENDING':
@@ -79,7 +93,7 @@ def status(task_id):
             'status': str(task.info),  # this is the exception raised
         }
     return render_template('status.html', response=response)
-{% endif %}  # noqa
+{% endif %}
 
 
 if __name__ == '__main__':

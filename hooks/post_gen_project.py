@@ -1,4 +1,4 @@
-# get {{cookiecutter.project_name}} dir
-# with open as rf
-#     replace('  # noqa', '')
-print(f"priting in {__name__}")
+{% if cookiecutter.requires_async_task == 'true' %}
+{% endif %}
+
+print("in post gen project hook")
